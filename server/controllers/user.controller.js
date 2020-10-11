@@ -3,11 +3,12 @@ const bcrypt = require('bcrypt');
 const _ = require('underscore');
 
 const User = require('../models/user.model');
+const { checkToken } = require('../middleware/auth');
 
 const app = express();
 
 // GET ALL
-app.get('/user', function(req, res) {
+app.get('/user', checkToken, function(req, res) {
 
     // Pagination
     let from = req.query.from || 0;
@@ -41,7 +42,7 @@ app.get('/user', function(req, res) {
 });
 
 // POST
-app.post('/user', function(req, res) {
+app.post('/user', checkToken, function(req, res) {
     let body = req.body;
 
     let user = new User({
@@ -68,7 +69,7 @@ app.post('/user', function(req, res) {
 });
 
 // PUT
-app.put('/user/:id', (req, res) => {
+app.put('/user/:id', checkToken, (req, res) => {
 
     let id = req.params.id;
     let body = _.pick(req.body, ['firstname', 'lastname', 'email', 'img']);
@@ -90,7 +91,7 @@ app.put('/user/:id', (req, res) => {
     );
 });
 
-app.delete('/user/:id', function(req, res) {
+app.delete('/user/:id', checkToken, function(req, res) {
 
     let id = req.params.id;
     let changeStatus = {
