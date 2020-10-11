@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+let timestamps = require('mongoose-timestamp');
 const uniqueValidator = require('mongoose-unique-validator');
 
 let validRole = {
@@ -57,6 +58,10 @@ userSchema.methods.toJSON = function() {
 
     return userObject;
 }
+userSchema.plugin(timestamps, {
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
+});
 
 userSchema.plugin(uniqueValidator, {
     message: '{PATH} debe de ser único'
