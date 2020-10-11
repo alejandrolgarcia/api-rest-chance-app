@@ -20,7 +20,7 @@ app.get('/user', checkToken, function(req, res) {
     User.find({ status: true }, 'firstname lastname email img')
         .skip(from)
         .limit(limit)
-        .exec((err, users) => {
+        .exec((err, user) => {
 
             if (err) {
                 return res.status(400).json({
@@ -34,7 +34,7 @@ app.get('/user', checkToken, function(req, res) {
                     count,
                     from,
                     limit,
-                    users,
+                    user,
                 });
             });
 
