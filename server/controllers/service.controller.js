@@ -2,12 +2,12 @@ const express = require('express');
 
 const { checkToken } = require('../middleware/auth');
 
-const Card = require('../models/card.model');
+const Service = require('../models/service.model');
 
 const app = express();
 
 // GET ALL
-app.get('/card', checkToken, (req, res) => {
+app.get('/service', checkToken, (req, res) => {
 
     let from = req.query.from || 0;
     from = Number(from);
@@ -15,74 +15,84 @@ app.get('/card', checkToken, (req, res) => {
     let limit = req.query.limit || 20;
     limit = Number(limit);
 
-    Card.find({ status: true })
+    Service.find({ status: true })
         .skip(from)
         .limit(limit)
-        .populate('user', 'firstname lastname img')
-        .exec((err, card) => {
+        .exec((err, service) => {
             if (err) {
                 return res.status(500).json({
                     ok: false,
                     error: err,
                 });
             }
-            Card.countDocuments({ status: true }, (err, count) => {
+            Service.countDocuments({ status: true }, (err, count) => {
                 res.json({
                     ok: true,
                     count,
                     from,
                     limit,
-                    card,
+                    service,
                 });
             });
         });
 
 });
 
-// GET ID
-app.get('/card/:id', checkToken, (req, res) => {
-    
+// GET BY USER ID
+app.get('/service/:id', checkToken, (req, res) => {
+
+    let from = req.query.from || 0;
+    from = Number(from);
+
+    let limit = req.query.limit || 20;
+    limit = Number(limit);
+
     let id = req.params.id;
 
-    Card.findById(id)
-        .populate('user', 'firstname lastname img')
-        .exec( (err, card) => {
+    Service.find({ status: true, user: id })
+        .skip(from)
+        .limit(limit)
+        .exec((err, service) => {
             if (err) {
                 return res.status(500).json({
                     ok: false,
                     error: err,
                 });
             }
-            res.json({
-                ok: true,
-                card,
+            Service.countDocuments({ status: true }, (err, count) => {
+                res.json({
+                    ok: true,
+                    count,
+                    from,
+                    limit,
+                    service,
+                });
             });
         });
+
 });
 
 // POST
-app.post('/card', checkToken, (req, res) => {
+app.post('/service', checkToken, (req, res) => {
 
     let body = req.body;
-    let card = new Card({
+    let service = new Service({
         user: req.user._id,
-        profession: body.profession,
-        phone: body.phone,
-        email: body.email,
-        website: body.website,
-        address: body.address,
-        company: body.company,
-        slogan: body.slogan,
+        name: body.name,
+        desc: body.desc,
+        price: body.price,
+        time: body.time,
+        img: body.img,
     });
 
-    card.save((err, cardDB) => {
+    service.save((err, serviceDB) => {
         if (err) {
             return res.status(500).json({
                 ok: false,
                 error: err,
             });
         }
-        if (!cardDB) {
+        if (!serviceDB) {
             return res.status(400).json({
                 ok: false,
                 error: err,
@@ -90,67 +100,65 @@ app.post('/card', checkToken, (req, res) => {
         }
         res.json({
             ok: true,
-            card: cardDB,
+            service: serviceDB,
         });
     });
 
 });
 
 // PUT
-app.put('/card/:id', checkToken, (req, res) => {
+app.put('/service/:id', checkToken, (req, res) => {
 
     let id = req.params.id;
     let body = req.body;
 
-    let editCard = {
-        profession: body.profession,
-        phone: body.phone,
-        email: body.email,
-        website: body.website,
-        address: body.address,
-        company: body.company,
-        slogan: body.slogan,
+    let editService = {
+        name: body.name,
+        desc: body.desc,
+        price: body.price,
+        time: body.time,
+        img: body.img,
     }
 
-    Card.findByIdAndUpdate(id, editCard, { new: true, runValidators: true, context: 'query', useFindAndModify: false },
-        (err, cardDB) => {
+    Service.findByIdAndUpdate(id, editService, { new: true, runValidators: true, context: 'query', useFindAndModify: false },
+        (err, serviceDB) => {
             if (err) {
                 return res.status(500).json({
                     ok: false,
                     error: err,
                 });
             }
-            if (!cardDB) {
+            if (!serviceDB) {
                 return res.status(400).json({
                     ok: false,
                     error: {
-                        message: 'El ID de la tarjeta no existe'
+                        message: 'El ID del servicio no existe'
                     }
                 });
             }
             res.json({
                 ok: true,
-                card: cardDB,
+                service: serviceDB,
             });
         });
 });
 
 // DELETE
-app.delete('/card/:id', checkToken, (req, res) => {
+app.delete('/service/:id', checkToken, (req, res) => {
     let id = req.params.id;
 
     let changeStatus = {
         status: false,
     };
 
-    Card.findByIdAndUpdate(id, changeStatus, { new: true, useFindAndModify: false }, (err, cardDelete) => {
+    Service.findByIdAndUpdate(id, changeStatus, { new: true, useFindAndModify: false }, (err, serviceDelete) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
                 error: err,
             });
         }
-        if (!cardDelete) {
+        if (!serviceDelete) {
             return res.status(400).json({
                 ok: false,
                 error: {
@@ -160,7 +168,7 @@ app.delete('/card/:id', checkToken, (req, res) => {
         }
         res.json({
             ok: true,
-            card: cardDelete,
+            service: serviceDelete,
         });
     });
 });
